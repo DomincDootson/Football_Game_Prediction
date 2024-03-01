@@ -27,12 +27,14 @@ def create_processed_training_df(home_training_file, away_training_file, remove_
 	''' This pulls together all the different processing steps '''
 	df = creating_joint_df(home_training_file, away_training_file, remove_team_names)
 	df = fill_missing_values(df)
+	if contains_missing_values(df):
+		print("Contains missing values")
 	df = generate_features(df)
 	df = remove_extra_features(df)
 
 	return df 
 
 
-if __name__ == '__main__': 
-	df = create_processed_training_df('Train_Data/train_home_team_statistics_df.csv','Train_Data/train_away_team_statistics_df.csv',True)		
-
+# if __name__ == '__main__': 
+# 	df = create_processed_training_df('Train_Data/train_home_team_statistics_df.csv','Train_Data/train_away_team_statistics_df.csv',True)		
+# 	print(df['DIFF_GOOD_SHOT_season_sum'].head())

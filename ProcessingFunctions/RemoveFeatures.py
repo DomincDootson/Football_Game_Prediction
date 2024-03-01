@@ -5,7 +5,8 @@ KEEP_HOME_AWAY_VALUES = { 'TEAM_GAME_DRAW_season', # Keep in absolute value
                 'TEAM_INJURIES_season'}
 
 
-def should_keep_col_avg(s):
+def cols_without_average(s):
+    ''' Returns true if string does't contain avg'''
     if 'average' not in s:
         return True
     if ('TEAM_BALL_POSSESSION' in s) or ('TEAM_SUCCESSFUL_PASSES_PERCENTAGE' in s):
@@ -13,12 +14,13 @@ def should_keep_col_avg(s):
     return False
 
 def remove_averages(df):
-    cols_without_avg = [c for c in df.columns if should_keep_col_avg(c)]   
+    ''' Removes averages from the df '''
+    cols_without_avg = [c for c in df.columns if cols_without_average(c)]   
     return df[cols_without_avg].copy()
 
 
-
-def should_keep_remove_sum(s, others_to_keep):
+def is_HOME_AWAY_sum(s, others_to_keep):
+    '''Returns False if it is a Home or away sum term'''
     split_s = s.split('_')
     for term in others_to_keep:
         if term in s:
@@ -30,11 +32,13 @@ def should_keep_remove_sum(s, others_to_keep):
     
 
 def remove_HOME_AWAY_sums(df):
-    cols_without_avg_sum = [c for c in  df.columns if should_keep_remove_sum(c, KEEP_HOME_AWAY_VALUES)]
+    ''' Removes the sums that we don't need'''
+    cols_without_avg_sum = [c for c in  df.columns if is_HOME_AWAY_sum(c, KEEP_HOME_AWAY_VALUES)]
     return df[cols_without_avg_sum].copy()
 
 
 def remove_extra_features(df):
+    ''' Removes all the cols that we don't want'''
     return remove_HOME_AWAY_sums(remove_averages(df))
 
 

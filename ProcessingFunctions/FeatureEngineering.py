@@ -14,11 +14,12 @@ from sklearn.preprocessing import MinMaxScaler
 
 def generate_features(df):
 	''' Generate all the features, could us a pipeline'''
+	df = generate_difference_features(df)
 	df = generate_prior_features(df)
 	df = generate_good_shot_features(df)
+	
 	df = generate_form_feature(df)
-	df = generate_difference_features(df)
-	df = generate_goal_difference_feature(df)
+	df = generate_goal_difference_feature(scale_values(df))
 
 	return scale_values(df)
 
@@ -29,7 +30,7 @@ def generate_features(df):
 def generate_difference_features(df):
 	''' Generates the difference column'''
 	home_col, away_col = get_home_away_cols(df.columns)
-	diff_col = ["DIFF_" + "_".join(c.split('_')[1:]) for c in home_col if 'std' not in c]
+	diff_col = ["DIFF_" + "_".join(c.split('_')[1:]) for c in home_col if ('std' not in c)]
 	
 	df_home, df_away = df[home_col].copy(), df[away_col].copy()
 	
@@ -84,6 +85,9 @@ def generate_good_shot_features(df, model_file = 'Good_Shot_Feature/good_shot_mo
 	df['AWAY_GOOD_SHOT_season_sum'] = good_shot_model.predict(df[away_shot_season])
 	df['AWAY_GOOD_SHOT_5_last_match_sum'] = good_shot_model.predict(df[away_shot_5])
 
+	df['DIFF_GOOD_SHOT_season_sum'] = df['HOME_GOOD_SHOT_season_sum'] - df['AWAY_GOOD_SHOT_season_sum']
+	df['DIFF_GOOD_SHOT_5_last_match_sum'] = df['HOME_GOOD_SHOT_5_last_match_sum'] - df['AWAY_GOOD_SHOT_5_last_match_sum']
+
 	return df
 
 ## Form Metric ##
@@ -98,8 +102,8 @@ def generate_form_feature(df, model_file = 'Form_Feature/form_model.pkl', featur
 
 	df['AWAY_FORM_5_last_match_sum'] = form_model.predict(df[away_form_features].rename(columns = {o : n for o, n in zip(away_form_features, form_features)}))
 	df['HOME_FORM_5_last_match_sum'] = form_model.predict(df[home_form_features].rename(columns = {o : n for o, n in zip(home_form_features, form_features)}))
-
-	return df
+	df['DIFF_FORM_5_last_match_sum'] = df['HOME_FORM_5_last_match_sum'] - df['AWAY_FORM_5_last_match_sum']
+	return df.fillna(df.mean())
 
 ## GD Feature ## 
 ## ---------- ##
